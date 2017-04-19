@@ -20,7 +20,7 @@ xmin<-min(x)
 ymin<-min(y)
 
 cellSize<-x[[2]]-x[[1]] #constant size square grid is assumed in this projection
-offsetGrid<-cellSize/2
+offsetGrid<-cellSize/2 #x,y coordinate of the grid are mid points
 
 xcell<-ceiling((xvar-xmin+offsetGrid)/cellSize)
 ycell<-ceiling((yvar-ymin+offsetGrid)/cellSize)
