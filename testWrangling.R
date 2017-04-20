@@ -1,11 +1,14 @@
 library(ncdf4)
 fileH<-nc_open("data/INTER_OPER_R___FG1_____L3__20150322T000000_20150322T001000_0001.nc")
 
+fileFull<-nc_open("/nobackup/users/pagani/weatherAccidents/03/output.nc")
+
 lat<-ncvar_get(fileH,"lat")
 lon<-ncvar_get(fileH,"lon")
 x<-ncvar_get(fileH, "x")
 y<-ncvar_get(fileH, "y")
 test<-ncvar_get(fileH,"grid")
+timeee<-ncvar_get(fileFull,"time")
 
 
 dataAccidents<-read.csv("data/accidents/ExportOngevalsData.csv")
