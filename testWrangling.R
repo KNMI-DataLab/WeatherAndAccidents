@@ -1,20 +1,27 @@
 library(ncdf4)
-fileH<-nc_open("data/INTER_OPER_R___FG1_____L3__20150322T000000_20150322T001000_0001.nc")
+library(data.table)
+#fileH<-nc_open("data/INTER_OPER_R___FG1_____L3__20150322T000000_20150322T001000_0001.nc")
 
-fileFull<-nc_open("/nobackup/users/pagani/weatherAccidents/03/output.nc")
+fileFull<-nc_open("data/mergedWindDataSWOV.nc")
 
-lat<-ncvar_get(fileH,"lat")
-lon<-ncvar_get(fileH,"lon")
-x<-ncvar_get(fileH, "x")
-y<-ncvar_get(fileH, "y")
-test<-ncvar_get(fileH,"grid")
-timeee<-ncvar_get(fileFull,"time")
+lat<-ncvar_get(fileFull,"lat")
+lon<-ncvar_get(fileFull,"lon")
+x<-ncvar_get(fileFull, "x")
+y<-ncvar_get(fileFull, "y")
+test<-ncvar_get(fileFull,"grid")
+time<-ncvar_get(fileFull,"time")
+
+time<-as.POSIXct(time, origin = "1950-01-01", tz = "UTC")
+
+timeDT<-data.table(time,1:length(time), time)
+setnames(timeDT,c("timeToCouple","timeIndex","timeWindUTC"))
+setkey(timeDT,"timeToCouple")
 
 
-dataAccidents<-read.csv("data/accidents/ExportOngevalsData.csv")
-dataAccidents$date<-as.Date(dataAccidents$datum, "%d%b%y")
-levels(dataAccidents$Uur)[levels(dataAccidents$Uur)=='Onbekend'] <- NA
-dataAccidents$hour<-sapply(dataAccidents$Uur, function(y) strsplit(as.character(y),"\\.")[[1]][1])
+#dataAccidents<-read.csv("data/accidents/ExportOngevalsData.csv")
+#dataAccidents$date<-as.Date(dataAccidents$datum, "%d%b%y")
+#levels(dataAccidents$Uur)[levels(dataAccidents$Uur)=='Onbekend'] <- NA
+#dataAccidents$hour<-sapply(dataAccidents$Uur, function(y) strsplit(as.character(y),"\\.")[[1]][1])
 
 
 load("data/accidents/weekdataFiets.Rdata")
@@ -23,7 +30,10 @@ dataAccidentsBike<-weekdataFiets
 dataAccidentsBike$datetime<-paste0(dataAccidentsBike$datum, ' ', dataAccidentsBike$Uur,":",dataAccidentsBike$minuut,":00")
 dataAccidentsBike$datetime<-as.POSIXct(dataAccidentsBike$datetime, tz="Europe/Amsterdam", format = "%Y-%m-%d %H:%M:%S")
 
+dataAccidentsBike<-data.table(dataAccidentsBike)
+setkey(dataAccidentsBike,'datetime')
 
+dataAccidentsBike<-timeDT[dataAccidentsBike, roll='nearest']
 
 ##wrangling spatially the accidents and the wind speed
 xvar<-dataAccidentsBike$X
@@ -37,9 +47,9 @@ offsetGrid<-cellSize/2 #x,y coordinate of the grid are mid points
 
 xcell<-ceiling((xvar-xmin+offsetGrid)/cellSize)
 ycell<-ceiling((yvar-ymin+offsetGrid)/cellSize)
-wind<-test[cbind(xcell,ycell)]
+wind<-test[cbind(xcell,ycell,dataAccidentsBike$timeIndex)]
 
-dataAccidentsWind<-cbind(dataAccidentsBike,wind)
+dataAccidentsBike<-cbind(dataAccidentsBike,wind)
 
 
 
