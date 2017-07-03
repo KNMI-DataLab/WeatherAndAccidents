@@ -69,6 +69,7 @@ list(x=xcell, y=ycell)
 
 
 getMetaDataNetCDF<-function(filepath, variableOfInterest = "image1_image_data"){
+  fileFull<-nc_open(filepath)
   missingValue <- ncatt_get(fileFull,variableOfInterest,"_FillValue")
   missingValue <- missingValue$value
   scaleFactor <- ncatt_get(fileFull,variableOfInterest,"scale_factor")
