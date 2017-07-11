@@ -197,7 +197,6 @@ for (theDir in theDirs) {
                          Precipitation != missingValue) %>%
 
   # Compute Y as the numerical value of the column name without the "V"
-  # calculate the actual measurement                  
                   
                   mutate(Y = as.integer(substring(yLabel, 2)),
 
